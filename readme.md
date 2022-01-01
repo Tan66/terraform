@@ -1,11 +1,12 @@
-# command to preview the changes that terraform plans to make to your infrastructure
-
+1. command to preview the changes that terraform plans to make to your infrastructure
+    ```
     terraform plan
-
-# command to apply changes in the plan
-
+    ```
+2. command to apply changes in the plan
+    ```
     terraform apply
-
-# command to destroy the infrastructure created using terraform apply
-
+    ```
+3. command to destroy the infrastructure created using terraform apply
+    ```
     terraform destroy
+    ```
