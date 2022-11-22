@@ -52,15 +52,15 @@ resource "aws_route_table_association" "public_subnet_association" {
   route_table_id = aws_route_table.route_table.id
 }
 
-# resource "aws_subnet" "private_subnets" {
-#   count             = length(local.private_subnet_cidrs)
-#   vpc_id            = aws_vpc.vpc.id
-#   cidr_block        = element(local.private_subnet_cidrs, count.index)
-#   availability_zone = element(local.az, count.index)
-#   tags = {
-#     Name = "test-private-subnet-${count.index}"
-#   }
-# }
+resource "aws_subnet" "private_subnets" {
+  count             = length(local.private_subnet_cidrs)
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = element(local.private_subnet_cidrs, count.index)
+  availability_zone = element(local.az, count.index)
+  tags = {
+    Name = "test-private-subnet-${count.index}"
+  }
+}
 
 resource "aws_security_group" "allow" {
   name        = "allow"
@@ -72,6 +72,7 @@ resource "aws_security_group" "allow" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    # TODO: change to 0.0.0.0/0
     cidr_blocks = ["124.40.244.136/32"]
     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
   }
@@ -81,7 +82,7 @@ resource "aws_security_group" "allow" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["124.40.244.136/32"]
+    cidr_blocks = ["0.0.0.0/0"]
     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
   }
 
@@ -98,41 +99,41 @@ resource "aws_security_group" "allow" {
   }
 }
 
-# resource "aws_security_group" "lamda_sg" {
-#   name        = "lambda-sg"
-#   description = "Allow inbound traffic"
-#   vpc_id      = aws_vpc.vpc.id
+resource "aws_security_group" "lamda_sg" {
+  name        = "lambda-sg"
+  description = "Allow inbound traffic"
+  vpc_id      = aws_vpc.vpc.id
 
-#   ingress {
-#     description = "https from VPC"
-#     from_port   = 443
-#     to_port     = 443
-#     protocol    = "tcp"
-#     cidr_blocks = ["172.16.0.0/16"]
-#     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
-#   }
+  ingress {
+    description = "https from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["172.16.0.0/16"]
+    # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+  }
 
-#   egress {
-#     from_port        = 0
-#     to_port          = 0
-#     protocol         = "-1"
-#     cidr_blocks      = ["0.0.0.0/0"]
-#     ipv6_cidr_blocks = ["::/0"]
-#   }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
 
-#   tags = {
-#     Name = "lambda-sg"
-#   }
-# }
+  tags = {
+    Name = "lambda-sg"
+  }
+}
 
-# resource "aws_vpc_endpoint" "vpc_endpoint" {
-#   service_name        = "com.amazonaws.ap-south-1.execute-api"
-#   vpc_endpoint_type   = "Interface"
-#   vpc_id              = aws_vpc.vpc.id
-#   security_group_ids  = [aws_security_group.lamda_sg.id]
-#   subnet_ids          = [aws_subnet.private_subnets[0].id]
-#   private_dns_enabled = true
-# }
+resource "aws_vpc_endpoint" "vpc_endpoint" {
+  service_name        = "com.amazonaws.ap-south-1.execute-api"
+  vpc_endpoint_type   = "Interface"
+  vpc_id              = aws_vpc.vpc.id
+  security_group_ids  = [aws_security_group.lamda_sg.id]
+  subnet_ids          = [aws_subnet.private_subnets[0].id]
+  private_dns_enabled = true
+}
 
 # # nat gateway
 

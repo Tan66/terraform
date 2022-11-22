@@ -21,8 +21,8 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "web" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name      = "ec2keypair"
-  user_data     = file("init.sh")
+  key_name      = "ec2mumbai"
+  # user_data     = file("init.sh")
   tags = {
     Name = "webserver"
   }

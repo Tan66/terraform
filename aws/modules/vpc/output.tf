@@ -22,6 +22,6 @@ output "ec2_security_group_id" {
   value = aws_security_group.allow.id
 }
 
-# output "vpc_endpoint_id" {
-#     value = aws_vpc_endpoint.vpc_endpoint.id
-# }
+output "vpc_endpoint_id" {
+    value = aws_vpc_endpoint.vpc_endpoint.id
+}
