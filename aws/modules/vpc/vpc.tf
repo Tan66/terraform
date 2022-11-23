@@ -126,14 +126,14 @@ resource "aws_security_group" "lamda_sg" {
   }
 }
 
-resource "aws_vpc_endpoint" "vpc_endpoint" {
-  service_name        = "com.amazonaws.ap-south-1.execute-api"
-  vpc_endpoint_type   = "Interface"
-  vpc_id              = aws_vpc.vpc.id
-  security_group_ids  = [aws_security_group.lamda_sg.id]
-  subnet_ids          = [aws_subnet.private_subnets[0].id]
-  private_dns_enabled = true
-}
+# resource "aws_vpc_endpoint" "vpc_endpoint" {
+#   service_name        = "com.amazonaws.ap-south-1.execute-api"
+#   vpc_endpoint_type   = "Interface"
+#   vpc_id              = aws_vpc.vpc.id
+#   security_group_ids  = [aws_security_group.lamda_sg.id]
+#   subnet_ids          = [aws_subnet.private_subnets[0].id]
+#   private_dns_enabled = true
+# }
 
 # # nat gateway
 

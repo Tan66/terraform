@@ -5,10 +5,12 @@ variable "apache_ec2_server_count" {
 
 
 # rest api
-variable "rest_api_types" {
-    type = list
-}
+# variable "rest_api_types" {
+#     type = list
+# }
 
 # variable "rest_api_endpoint_ids" {
 #     type = list
 # }
+
+variable "rest_api_config" {}
