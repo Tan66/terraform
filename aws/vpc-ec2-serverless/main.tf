@@ -87,6 +87,74 @@ data "aws_ami" "amazon_linux_ecs_optimized" {
   }
 }
 
+resource "aws_launch_template" "this" {
+  name = "ecs-ec2"
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.this.name
+  }
+
+  image_id = data.aws_ami.amazon_linux_ecs_optimized.id
+  instance_type = "t2.micro"
+  key_name = "ec2mumbai"
+
+  monitoring {
+    enabled = false
+  }
+
+  vpc_security_group_ids = [module.vpc.allow_all_security_group_id]
+
+  tags = {
+    "env" = "dev"
+  }
+  user_data =  base64encode("#!/bin/bash\necho ECS_CLUSTER=ecs-ec2 >> /etc/ecs/ecs.config;")
+}
+
+resource "aws_autoscaling_group" "ecs_ec2_asg" {
+  name                 = "test-asg"
+  desired_capacity     = 1
+  min_size             = 1
+  max_size             = 1
+  vpc_zone_identifier  = module.vpc.public_subnet_ids
+  # launch_configuration = aws_launch_configuration.ecs_ec2_launch_configuration.id
+  launch_template {
+    id = aws_launch_template.this.id
+    version = "$Latest"
+  }
+}
+
+# asg
+module "ecs_ec2" {
+  source = "terraform-aws-modules/ecs/aws"
+
+  cluster_name = "ecs-ec2"
+
+  cluster_settings = {
+      name = "containerInsights"
+      value = "disabled"
+  }
+
+  autoscaling_capacity_providers = {
+    one = {
+      auto_scaling_group_arn = aws_autoscaling_group.ecs_ec2_asg.arn
+      managed_termination_protection  = "DISABLED"
+
+      managed_scaling =  {
+        maximum_scaling_step_size = 5
+        minimum_scaling_step_size = 1
+        status                    = "ENABLED"
+        target_capacity           = 60
+      }
+
+      default_capacity_provider_strategy = {
+        weight = 100
+        base = 1
+      }
+    }
+  }
+}
+
+#########################
 # not all feature available in launch configuration
 # resource "aws_launch_configuration" "ecs_ec2_launch_configuration" {
 #   name          = "lt-ecsec2launchconfiguration"
@@ -96,44 +164,4 @@ data "aws_ami" "amazon_linux_ecs_optimized" {
 #   security_groups = [module.vpc.allow_all_security_group_id]
 #   key_name = "ec2mumbai"
 #   user_data = "#!/bin/bash\necho ECS_CLUSTER=ecs-ec2 >> /etc/ecs/ecs.config;"
-# }
-
-# resource "aws_autoscaling_group" "ecs_ec2_asg" {
-#   name                 = "test-asg"
-#   desired_capacity     = 1
-#   min_size             = 1
-#   max_size             = 1
-#   vpc_zone_identifier  = module.vpc.public_subnet_ids
-#   launch_configuration = aws_launch_configuration.ecs_ec2_launch_configuration.id
-# }
-
-# # asg
-# module "ecs_ec2" {
-#   source = "terraform-aws-modules/ecs/aws"
-
-#   cluster_name = "ecs-ec2"
-
-#   cluster_settings = {
-#       name = "containerInsights"
-#       value = "disabled"
-#   }
-
-#   autoscaling_capacity_providers = {
-#     one = {
-#       auto_scaling_group_arn = aws_autoscaling_group.ecs_ec2_asg.arn
-#       managed_termination_protection  = "DISABLED"
-
-#       managed_scaling =  {
-#         maximum_scaling_step_size = 5
-#         minimum_scaling_step_size = 1
-#         status                    = "ENABLED"
-#         target_capacity           = 60
-#       }
-
-#       default_capacity_provider_strategy = {
-#         weight = 100
-#         base = 1
-#       }
-#     }
-#   }
 # }
