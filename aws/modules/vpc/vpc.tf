@@ -68,20 +68,11 @@ resource "aws_security_group" "allow" {
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
-    description = "SSH from VPC"
-    from_port   = 22
-    to_port     = 22
+    description = "all"
+    from_port   = 0
+    to_port     = 0
     protocol    = "tcp"
     # TODO: change to 0.0.0.0/0
-    cidr_blocks = ["124.40.244.136/32"]
-    # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
-  }
-
-  ingress {
-    description = "http from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
   }
@@ -99,32 +90,32 @@ resource "aws_security_group" "allow" {
   }
 }
 
-resource "aws_security_group" "lamda_sg" {
-  name        = "lambda-sg"
-  description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.vpc.id
+# resource "aws_security_group" "lamda_sg" {
+#   name        = "lambda-sg"
+#   description = "Allow inbound traffic"
+#   vpc_id      = aws_vpc.vpc.id
 
-  ingress {
-    description = "https from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["172.16.0.0/16"]
-    # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
-  }
+#   ingress {
+#     description = "https from VPC"
+#     from_port   = 443
+#     to_port     = 443
+#     protocol    = "tcp"
+#     cidr_blocks = ["172.16.0.0/16"]
+#     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+#   }
 
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
+#   egress {
+#     from_port        = 0
+#     to_port          = 0
+#     protocol         = "-1"
+#     cidr_blocks      = ["0.0.0.0/0"]
+#     ipv6_cidr_blocks = ["::/0"]
+#   }
 
-  tags = {
-    Name = "lambda-sg"
-  }
-}
+#   tags = {
+#     Name = "lambda-sg"
+#   }
+# }
 
 # resource "aws_vpc_endpoint" "vpc_endpoint" {
 #   service_name        = "com.amazonaws.ap-south-1.execute-api"
