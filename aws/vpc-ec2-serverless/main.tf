@@ -36,12 +36,12 @@ module "vpc" {
 ## alb
 
 resource "aws_lb" "this" {
-  name               = "test-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [module.vpc.allow_all_security_group_id]
-  subnets            = [for subnet in module.vpc.public_subnet_ids : subnet]
-  enable_http2 = false
+  name                       = "test-alb"
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [module.vpc.allow_all_security_group_id]
+  subnets                    = [for subnet in module.vpc.public_subnet_ids : subnet]
+  enable_http2               = false
   enable_deletion_protection = false
 
   access_logs {
@@ -62,19 +62,19 @@ output "alb_dns" {
 ## alb target group
 
 resource "aws_lb_target_group" "this" {
-  name     = "test-ecs-tg"
-  port     = 80
+  name        = "test-ecs-tg"
+  port        = 80
   target_type = "instance"
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
   health_check {
-    enabled = true
-    healthy_threshold = 3
-    interval = 30
-    path = "/"
-    port = "traffic-port"
-    protocol = "HTTP"
-    timeout = 5
+    enabled             = true
+    healthy_threshold   = 3
+    interval            = 30
+    path                = "/"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
     unhealthy_threshold = 3
   }
   tags = {
@@ -82,7 +82,11 @@ resource "aws_lb_target_group" "this" {
   }
 }
 
-resource "aws_lb_listener" "thi" {
+output "target_group_arn" {
+  value = aws_lb_target_group.this.arn
+}
+
+resource "aws_lb_listener" "this" {
   load_balancer_arn = aws_lb.this.arn
   port              = "80"
   protocol          = "HTTP"
@@ -98,199 +102,117 @@ resource "aws_lb_listener" "thi" {
   }
 }
 
-data "aws_iam_policy_document" "this" {
-    statement {
-        actions = ["sts:AssumeRole"]
 
-        principals {
-          type = "Service"
-          identifiers = ["ec2.amazonaws.com"]
-        }
-    }
+##############################################################################
+## asg
+module "ecs_asg" {
+  source = "../modules/asg_ecs"
+
+  for_each = var.asg_ecs_config
+  create   = var.asg_ecs_config[each.key].create
+  # asg ecs ec2 instance profile
+  asg_ecs_instance_profile_name = var.asg_ecs_config[each.key].iam_role.asg_ecs_instance_profile_name
+  asg_ecs_iam_role_name         = var.asg_ecs_config[each.key].iam_role.asg_ecs_iam_role_name
+
+  # asg
+  ec2_ecs_optimised_ami_name = var.asg_ecs_config[each.key].asg.aws_ami.name
+
+  aws_launch_template_name                   = var.asg_ecs_config[each.key].asg.aws_launch_template.name
+  aws_launch_template_instance_type          = var.asg_ecs_config[each.key].asg.aws_launch_template.instance_type
+  aws_launch_template_key_name               = var.asg_ecs_config[each.key].asg.aws_launch_template.key_name
+  aws_launch_template_vpc_security_group_ids = [module.vpc.allow_all_security_group_id]
+  aws_launch_template_tags                   = var.asg_ecs_config[each.key].asg.aws_launch_template.tags
+  ecs_cluster_name                           = var.asg_ecs_config[each.key].asg.aws_launch_template.ecs_cluster_name
+
+  aws_autoscaling_group_name                = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.name
+  aws_autoscaling_group_desired_capacity    = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.desired_capacity
+  aws_autoscaling_group_min_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.min_size
+  aws_autoscaling_group_max_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.max_size
+  aws_autoscaling_group_vpc_zone_identifier = module.vpc.public_subnet_ids
 }
 
-resource "aws_iam_role" "this" {
-  name = "ecs-ec2-agent-role"
-  assume_role_policy = <<EOF
-{
-  "Version": "2008-10-17",
-  "Statement": [
-      {
-          "Sid": "",
-          "Effect": "Allow",
-          "Principal": {
-              "Service": "ec2.amazonaws.com"
-          },
-          "Action": "sts:AssumeRole"
-      }
+
+# ecs
+
+module "ecs" {
+  source = "../modules/ecs_external"
+
+  for_each = var.ecs_config
+
+  create                         = var.ecs_config[each.key].create
+  cluster_name                   = var.ecs_config[each.key].cluster_name
+  cluster_settings               = var.ecs_config[each.key].cluster_settings
+  cluster_configuration          = var.ecs_config[each.key].cluster_configuration
+  fargate_capacity_providers     = var.ecs_config[each.key].fargate_capacity_providers
+  autoscaling_capacity_providers = var.ecs_config[each.key].autoscaling_capacity_providers
+  tags                           = var.ecs_config[each.key].tags
+}
+
+module "ecs_task_definition" {
+  source = "../modules/ecs_task_definition"
+
+  for_each = var.ecs_task_definition_config
+
+  create                   = var.ecs_task_definition_config[each.key].create
+  family                   = var.ecs_task_definition_config[each.key].family
+  container_definitions    = var.ecs_task_definition_config[each.key].container_definitions
+  requires_compatibilities = var.ecs_task_definition_config[each.key].requires_compatibilities
+  tags                     = var.ecs_task_definition_config[each.key].tags
+}
+
+module "ecs_service" {
+  source = "../modules/ecs_service"
+
+  depends_on = [
+    module.ecs
   ]
-}
-  EOF
-}
 
-resource "aws_iam_role_policy_attachment" "this" {
-  role = aws_iam_role.this.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-}
+  for_each = var.ecs_service_config
 
-resource "aws_iam_instance_profile" "this" {
-  name = "ecs-ec2-agent-ip"
-  role = aws_iam_role.this.name
-}
-
-data "aws_ami" "amazon_linux_ecs_optimized" {
-  owners      = ["amazon"]
-  most_recent = true
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-ecs-hvm-2.0.20221118-x86_64-ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+  create                         = var.ecs_service_config[each.key].create
+  name                           = var.ecs_service_config[each.key].name
+  cluster                        = var.ecs_service_config[each.key].cluster
+  task_definition                = var.ecs_service_config[each.key].task_definition
+  desired_count                  = var.ecs_service_config[each.key].desired_count
+  enable_execute_command         = var.ecs_service_config[each.key].enable_execute_command
+  force_new_deployment           = var.ecs_service_config[each.key].force_new_deployment
+  launch_type                    = var.ecs_service_config[each.key].launch_type
+  scheduling_strategy            = var.ecs_service_config[each.key].scheduling_strategy
+  load_balancer_target_group_arn = var.ecs_service_config[each.key].load_balancer.target_group_arn
+  load_balancer_container_name   = var.ecs_service_config[each.key].load_balancer.container_name
+  load_balancer_container_port   = var.ecs_service_config[each.key].load_balancer.container_port
+  iam_role                       = var.ecs_service_config[each.key].iam_role
+  tags                           = var.ecs_service_config[each.key].tags
 }
 
-resource "aws_launch_template" "this" {
-  name = "ecs-ec2"
+# ## ecs service
 
-  iam_instance_profile {
-    name = aws_iam_instance_profile.this.name
-  }
+# data "aws_iam_role" "ecs_service_role" {
+#   name = "AWSServiceRoleForECS"
+# }
 
-  image_id = data.aws_ami.amazon_linux_ecs_optimized.id
-  instance_type = "t2.micro"
-  key_name = "ec2mumbai"
+# resource "aws_ecs_service" "this" {
+#   name = "nginx"
+#   cluster = module.ecs_ec2.cluster_name
+#   task_definition = aws_ecs_task_definition.this.arn
+#   desired_count = 1
+#   enable_execute_command = false
+#   force_new_deployment = true
+#   launch_type = "EC2" # EC2, FARGATE, EXTERNAL
+#   scheduling_strategy = "REPLICA" # REPLICA or DAEMON
+#   load_balancer {
+#     target_group_arn = aws_lb_target_group.this.arn
+#     container_name = "nginx"
+#     container_port = 80
+#   }
+#   iam_role = "arn:aws:iam::270009541057:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+#   tags = {
+#     "env" = "dev"
+#   }
 
-  monitoring {
-    enabled = false
-  }
+# }
 
-  vpc_security_group_ids = [module.vpc.allow_all_security_group_id]
 
-  tags = {
-    "env" = "dev"
-  }
-  user_data =  base64encode("#!/bin/bash\necho ECS_CLUSTER=ecs-ec2 >> /etc/ecs/ecs.config;")
-}
-
-resource "aws_autoscaling_group" "ecs_ec2_asg" {
-  name                 = "test-asg"
-  desired_capacity     = 1
-  min_size             = 1
-  max_size             = 1
-  vpc_zone_identifier  = module.vpc.public_subnet_ids
-  # launch_configuration = aws_launch_configuration.ecs_ec2_launch_configuration.id
-  launch_template {
-    id = aws_launch_template.this.id
-    version = "$Latest"
-  }
-  
-  tag {
-    key = "AmazonECSManaged"
-    value = ""
-    propagate_at_launch = true
-  }
-}
-
-# asg
-module "ecs_ec2" {
-  source = "terraform-aws-modules/ecs/aws"
-
-  cluster_name = "ecs-ec2"
-
-  cluster_settings = {
-      name = "containerInsights"
-      value = "disabled"
-  }
-
-  autoscaling_capacity_providers = {
-    one = {
-      auto_scaling_group_arn = aws_autoscaling_group.ecs_ec2_asg.arn
-      managed_termination_protection  = "DISABLED"
-
-      managed_scaling =  {
-        maximum_scaling_step_size = 5
-        minimum_scaling_step_size = 1
-        status                    = "ENABLED"
-        target_capacity           = 60
-      }
-
-      default_capacity_provider_strategy = {
-        weight = 100
-        base = 1
-      }
-    }
-  }
-}
-
-## task definition
-## refer https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html
-resource "aws_ecs_task_definition" "this" {
-  family = "test"
-  container_definitions = jsonencode(
-    [
-      {
-        name = "nginx"
-        image = "nginx"
-        cpu = 0
-        memory = 300
-        memoryReservation = 256
-        essential = true
-        environment = []
-        mountPoints = []
-        privilaged = false
-        secrets = []
-        volumesFrom = []
-        portMappings = [
-          {
-            containerPort = 80
-            hostPort = 0
-            protocol = "tcp"
-          }
-        ]
-
-      }
-    ]
-  )
-
-  # EC2 or FARGATE
-  requires_compatibilities = [
-    "EC2"
-  ]
-  
-  tags = {
-    "env" = "dev"
-  }
-}
-
-## ecs service
-
-data "aws_iam_role" "ecs_service_role" {
-  name = "AWSServiceRoleForECS"
-}
-
-resource "aws_ecs_service" "this" {
-  name = "nginx"
-  cluster = module.ecs_ec2.cluster_name
-  task_definition = aws_ecs_task_definition.this.arn
-  desired_count = 1
-  enable_execute_command = false
-  force_new_deployment = true
-  launch_type = "EC2" # EC2, FARGATE, EXTERNAL
-  scheduling_strategy = "REPLICA" # REPLICA or DAEMON
-  load_balancer {
-    target_group_arn = aws_lb_target_group.this.arn
-    container_name = "nginx"
-    container_port = 80
-  }
-  iam_role = data.aws_iam_role.ecs_service_role.arn
-  tags = {
-    "env" = "dev"
-  }
-  
-}
 
 
 

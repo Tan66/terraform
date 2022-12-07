@@ -10,3 +10,9 @@
     ```
     terraform destroy
     ```
+
+4. enable logging
+    ```
+    export TF_LOG="TRACE"
+    export TF_LOG_PATH="debug.log"
+    ```

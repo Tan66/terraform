@@ -7,5 +7,5 @@ variable "endpoint_ids" {
 }
 
 variable "name" {
-    
+
 }

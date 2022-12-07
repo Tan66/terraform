@@ -1,6 +1,6 @@
 # ec2
 variable "apache_ec2_server_count" {
-  type        = bool
+  type = bool
 }
 
 
@@ -14,3 +14,19 @@ variable "apache_ec2_server_count" {
 # }
 
 variable "rest_api_config" {}
+
+variable "asg_ecs_config" {
+
+}
+
+variable "ecs_config" {
+
+}
+
+variable "ecs_task_definition_config" {
+
+}
+
+variable "ecs_service_config" {
+
+}

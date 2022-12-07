@@ -42,3 +42,15 @@ output "security_group_id" {
 #     for k, v in module.rest_api : k => v
 #   }
 # }
+
+## ECS
+
+output "asg_ecs_arn" {
+  value = module.ecs_asg["asg1"].asg_arn
+}
+
+## ecs task definition
+
+output "apache_task_definition_arn" {
+  value = module.ecs_task_definition["td1"].task_definition_arn
+}
