@@ -98,33 +98,33 @@ ecs_config = {
   }
 
   cluster2 = {
-    create       = false # set create = false if asg not created/cluster not required
+    create       = true # set create = false if asg not created/cluster not required
     cluster_name = "test_ecs_2"
     cluster_settings = {
       name  = "containerInsights"
       value = "disabled"
     }
-    cluster_configuration          = null
-    fargate_capacity_providers     = {}
-    autoscaling_capacity_providers = {}
-    #   one = {
-    #     auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:376c184e-eabf-4745-9559-f7f4e71b0446:autoScalingGroupName/asg_ecs"
-    #     managed_termination_protection = "DISABLED"
+    cluster_configuration      = null
+    fargate_capacity_providers = {}
+    autoscaling_capacity_providers = {
+      one = {
+        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:4e615471-b351-45a9-85de-21965a5b2155:autoScalingGroupName/asg_ecs"
+        managed_termination_protection = "DISABLED"
 
-    #     # for autoscaling
-    #     managed_scaling = {
-    #       maximum_scaling_step_size = 5
-    #       minimum_scaling_step_size = 1
-    #       status                    = "ENABLED"
-    #       target_capacity           = 60
-    #     }
+        # for autoscaling
+        managed_scaling = {
+          maximum_scaling_step_size = 5
+          minimum_scaling_step_size = 1
+          status                    = "ENABLED"
+          target_capacity           = 60
+        }
 
-    #     default_capacity_provider_strategy = {
-    #       weight = 100
-    #       base   = 1
-    #     }
-    #   }
-    # }
+        default_capacity_provider_strategy = {
+          weight = 100
+          base   = 1
+        }
+      }
+    }
     tags = {
       "env" = "dev"
     }

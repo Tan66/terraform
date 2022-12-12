@@ -168,6 +168,10 @@ module "ecs_task_definition" {
   tags                     = var.ecs_task_definition_config[each.key].tags
 }
 
+output "apache_task_definition_arn" {
+  value = module.ecs_task_definition["td1"].task_definition_arn
+}
+
 # module "ecs_service" {
 #   source = "../modules/ecs_service"
 
