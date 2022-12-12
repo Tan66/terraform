@@ -39,10 +39,13 @@ asg_ecs_config = {
         name          = "asg_ecs_lt"
         instance_type = "t2.micro"
         key_name      = "ec2mumbai"
+        monitoring = {
+          enabled = false
+        }
         tags = {
           "env" = "dev"
         }
-        ecs_cluster_name = "test_ecs" ## make sure to give the correct ecs cluster name
+        ecs_cluster_name = "test_ecs_2" ## make sure to give the correct ecs cluster name
       }
 
       aws_autoscaling_group = {
@@ -72,7 +75,40 @@ ecs_config = {
     fargate_capacity_providers = {}
     autoscaling_capacity_providers = {
       one = {
-        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:9b48a703-cc6c-4036-8c84-19f9e35ecd88:autoScalingGroupName/asg_ecs"
+        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:135d88d8-2fc7-4050-b531-c88b74b14adf:autoScalingGroupName/asg_ecs"
+        managed_termination_protection = "DISABLED"
+
+        # for autoscaling
+        managed_scaling = {
+          maximum_scaling_step_size = 5
+          minimum_scaling_step_size = 1
+          status                    = "ENABLED"
+          target_capacity           = 60
+        }
+
+        default_capacity_provider_strategy = {
+          weight = 100
+          base   = 1
+        }
+      }
+    }
+    tags = {
+      "env" = "dev"
+    }
+  }
+
+  cluster2 = {
+    create       = false # set create = false if asg not created/cluster not required
+    cluster_name = "test_ecs_2"
+    cluster_settings = {
+      name  = "containerInsights"
+      value = "disabled"
+    }
+    cluster_configuration      = null
+    fargate_capacity_providers = {}
+    autoscaling_capacity_providers = {
+      one = {
+        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:376c184e-eabf-4745-9559-f7f4e71b0446:autoScalingGroupName/asg_ecs"
         managed_termination_protection = "DISABLED"
 
         # for autoscaling
@@ -129,6 +165,9 @@ ecs_task_definition_config = {
     requires_compatibilities = [
       "EC2"
     ]
+
+    task_execution_role_arn = null
+    task_role_arn           = null
 
     tags = {
       "env" = "dev"

@@ -13,7 +13,7 @@ resource "aws_ecs_service" "this" {
     container_name   = var.load_balancer_container_name
     container_port   = var.load_balancer_container_port
   }
-  iam_role = var.iam_role
+  iam_role = var.iam_role # required when using load balancer
   tags     = var.tags
 
 }

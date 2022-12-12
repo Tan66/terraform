@@ -6,7 +6,9 @@ resource "aws_ecs_task_definition" "this" {
   # EC2 or FARGATE
   requires_compatibilities = var.requires_compatibilities
 
-  tags = var.tags
+  task_role_arn      = var.task_role_arn
+  execution_role_arn = var.task_execution_role_arn
+  tags               = var.tags
 }
 
 ## refer https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html

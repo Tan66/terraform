@@ -45,12 +45,12 @@ output "security_group_id" {
 
 ## ECS
 
-output "asg_ecs_arn" {
-  value = module.ecs_asg["asg1"].asg_arn
-}
+# output "asg_ecs_arn" {
+#   value = module.ecs_asg["asg1"].asg_arn
+# }
 
-## ecs task definition
+# ## ecs task definition
 
-output "apache_task_definition_arn" {
-  value = module.ecs_task_definition["td1"].task_definition_arn
-}
+# output "apache_task_definition_arn" {
+#   value = module.ecs_task_definition["td1"].task_definition_arn
+# }

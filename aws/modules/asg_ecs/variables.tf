@@ -39,6 +39,10 @@ variable "aws_launch_template_vpc_security_group_ids" {
 
 }
 
+variable "aws_launch_template_monitoring_enabled" {
+
+}
+
 variable "aws_launch_template_tags" {
 
 }

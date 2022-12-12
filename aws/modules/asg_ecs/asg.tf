@@ -30,7 +30,7 @@ resource "aws_launch_template" "this" {
   key_name      = var.aws_launch_template_key_name
 
   monitoring {
-    enabled = false
+    enabled = var.aws_launch_template_monitoring_enabled
   }
 
   vpc_security_group_ids = var.aws_launch_template_vpc_security_group_ids
@@ -60,3 +60,17 @@ resource "aws_autoscaling_group" "this" {
     propagate_at_launch = true
   }
 }
+
+
+
+#########################
+# not all feature available in launch configuration
+# resource "aws_launch_configuration" "ecs_ec2_launch_configuration" {
+#   name          = "lt-ecsec2launchconfiguration"
+#   image_id      = data.aws_ami.amazon_linux_ecs_optimized.id
+#   instance_type = "t2.micro"
+#   iam_instance_profile = aws_iam_instance_profile.this.name
+#   security_groups = [module.vpc.allow_all_security_group_id]
+#   key_name = "ec2mumbai"
+#   user_data = "#!/bin/bash\necho ECS_CLUSTER=ecs-ec2 >> /etc/ecs/ecs.config;"
+# }
