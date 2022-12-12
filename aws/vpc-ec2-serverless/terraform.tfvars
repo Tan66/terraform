@@ -104,27 +104,27 @@ ecs_config = {
       name  = "containerInsights"
       value = "disabled"
     }
-    cluster_configuration      = null
-    fargate_capacity_providers = {}
-    autoscaling_capacity_providers = {
-      one = {
-        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:376c184e-eabf-4745-9559-f7f4e71b0446:autoScalingGroupName/asg_ecs"
-        managed_termination_protection = "DISABLED"
+    cluster_configuration          = null
+    fargate_capacity_providers     = {}
+    autoscaling_capacity_providers = {}
+    #   one = {
+    #     auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:376c184e-eabf-4745-9559-f7f4e71b0446:autoScalingGroupName/asg_ecs"
+    #     managed_termination_protection = "DISABLED"
 
-        # for autoscaling
-        managed_scaling = {
-          maximum_scaling_step_size = 5
-          minimum_scaling_step_size = 1
-          status                    = "ENABLED"
-          target_capacity           = 60
-        }
+    #     # for autoscaling
+    #     managed_scaling = {
+    #       maximum_scaling_step_size = 5
+    #       minimum_scaling_step_size = 1
+    #       status                    = "ENABLED"
+    #       target_capacity           = 60
+    #     }
 
-        default_capacity_provider_strategy = {
-          weight = 100
-          base   = 1
-        }
-      }
-    }
+    #     default_capacity_provider_strategy = {
+    #       weight = 100
+    #       base   = 1
+    #     }
+    #   }
+    # }
     tags = {
       "env" = "dev"
     }
@@ -168,6 +168,16 @@ ecs_task_definition_config = {
 
     task_execution_role_arn = null
     task_role_arn           = null
+
+    # volume = {
+    #   name = "test"
+    #   docker_volume_configuration = {}
+    #   efs_volume_configuration = {}
+    #   fsx_windows_file_server_volume_configuration = {}
+    #   host_path = null
+    # }
+
+    volume = {}
 
     tags = {
       "env" = "dev"

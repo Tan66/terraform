@@ -105,36 +105,36 @@ module "vpc" {
 
 # ##############################################################################
 # ## asg
-# module "ecs_asg" {
-#   source = "../modules/asg_ecs"
+module "ecs_asg" {
+  source = "../modules/asg_ecs"
 
-#   for_each = var.asg_ecs_config
-#   create   = var.asg_ecs_config[each.key].create
-#   # asg ecs ec2 instance profile
-#   asg_ecs_instance_profile_name = var.asg_ecs_config[each.key].iam_role.asg_ecs_instance_profile_name
-#   asg_ecs_iam_role_name         = var.asg_ecs_config[each.key].iam_role.asg_ecs_iam_role_name
+  for_each = var.asg_ecs_config
+  create   = var.asg_ecs_config[each.key].create
+  # asg ecs ec2 instance profile
+  asg_ecs_instance_profile_name = var.asg_ecs_config[each.key].iam_role.asg_ecs_instance_profile_name
+  asg_ecs_iam_role_name         = var.asg_ecs_config[each.key].iam_role.asg_ecs_iam_role_name
 
-#   # asg
-#   ec2_ecs_optimised_ami_name = var.asg_ecs_config[each.key].asg.aws_ami.name
+  # asg
+  ec2_ecs_optimised_ami_name = var.asg_ecs_config[each.key].asg.aws_ami.name
 
-#   aws_launch_template_name                   = var.asg_ecs_config[each.key].asg.aws_launch_template.name
-#   aws_launch_template_instance_type          = var.asg_ecs_config[each.key].asg.aws_launch_template.instance_type
-#   aws_launch_template_key_name               = var.asg_ecs_config[each.key].asg.aws_launch_template.key_name
-#   aws_launch_template_vpc_security_group_ids = [module.vpc.allow_all_security_group_id]
-#   aws_launch_template_monitoring_enabled = var.asg_ecs_config[each.key].asg.aws_launch_template.monitoring.enabled
-#   aws_launch_template_tags                   = var.asg_ecs_config[each.key].asg.aws_launch_template.tags
-#   ecs_cluster_name                           = var.asg_ecs_config[each.key].asg.aws_launch_template.ecs_cluster_name
+  aws_launch_template_name                   = var.asg_ecs_config[each.key].asg.aws_launch_template.name
+  aws_launch_template_instance_type          = var.asg_ecs_config[each.key].asg.aws_launch_template.instance_type
+  aws_launch_template_key_name               = var.asg_ecs_config[each.key].asg.aws_launch_template.key_name
+  aws_launch_template_vpc_security_group_ids = [module.vpc.allow_all_security_group_id]
+  aws_launch_template_monitoring_enabled     = var.asg_ecs_config[each.key].asg.aws_launch_template.monitoring.enabled
+  aws_launch_template_tags                   = var.asg_ecs_config[each.key].asg.aws_launch_template.tags
+  ecs_cluster_name                           = var.asg_ecs_config[each.key].asg.aws_launch_template.ecs_cluster_name
 
-#   aws_autoscaling_group_name                = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.name
-#   aws_autoscaling_group_desired_capacity    = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.desired_capacity
-#   aws_autoscaling_group_min_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.min_size
-#   aws_autoscaling_group_max_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.max_size
-#   aws_autoscaling_group_vpc_zone_identifier = module.vpc.private_subnet_ids
-# }
+  aws_autoscaling_group_name                = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.name
+  aws_autoscaling_group_desired_capacity    = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.desired_capacity
+  aws_autoscaling_group_min_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.min_size
+  aws_autoscaling_group_max_size            = var.asg_ecs_config[each.key].asg.aws_autoscaling_group.max_size
+  aws_autoscaling_group_vpc_zone_identifier = module.vpc.public_subnet_ids
+}
 
-# output "asg_ecs_arn" {
-#   value = module.ecs_asg["asg1"].asg_arn
-# }
+output "asg_ecs_arn" {
+  value = module.ecs_asg["asg1"].asg_arn
+}
 
 
 # ecs
@@ -164,6 +164,7 @@ module "ecs_task_definition" {
   requires_compatibilities = var.ecs_task_definition_config[each.key].requires_compatibilities
   task_role_arn            = var.ecs_task_definition_config[each.key].task_role_arn
   task_execution_role_arn  = var.ecs_task_definition_config[each.key].task_execution_role_arn
+  volume                   = var.ecs_task_definition_config[each.key].volume
   tags                     = var.ecs_task_definition_config[each.key].tags
 }
 
