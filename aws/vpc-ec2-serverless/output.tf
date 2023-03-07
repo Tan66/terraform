@@ -28,12 +28,12 @@ output "security_group_id" {
 # }
 
 # ec2
-# output "ec2_public_ip" {
-#   value = var.apache_ec2_server_count ?  one(module.ec2).ec2_public_ip : null
-#   #   sensitive   = true
-#   description = "description"
-#   depends_on  = []
-# }
+output "ec2_public_ip" {
+  value = var.apache_ec2_server_create ?  one(module.ec2).ec2_public_ip : null
+  #   sensitive   = true
+  description = "description"
+  depends_on  = []
+}
 
 # rest api
 # output "rest_api_id" {

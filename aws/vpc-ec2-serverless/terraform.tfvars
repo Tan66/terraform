@@ -1,5 +1,5 @@
 # ec2
-apache_ec2_server_count = false
+apache_ec2_server_create = false
 
 # rest api
 # rest_api_types = ["REGIONAL"]
@@ -45,7 +45,7 @@ asg_ecs_config = {
         tags = {
           "env" = "dev"
         }
-        ecs_cluster_name = "test_ecs_2" ## make sure to give the correct ecs cluster name
+        ecs_cluster_name = "test_ecs" ## make sure to give the correct ecs cluster name
       }
 
       aws_autoscaling_group = {
@@ -65,7 +65,7 @@ asg_ecs_config = {
 ecs_config = {
 
   cluster1 = {
-    create       = false # set create = false if asg not created/cluster not required
+    create       = true # set create = false if asg not created/cluster not required
     cluster_name = "test_ecs"
     cluster_settings = {
       name  = "containerInsights"
@@ -75,7 +75,7 @@ ecs_config = {
     fargate_capacity_providers = {}
     autoscaling_capacity_providers = {
       one = {
-        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:135d88d8-2fc7-4050-b531-c88b74b14adf:autoScalingGroupName/asg_ecs"
+        auto_scaling_group_arn         = "arn:aws:autoscaling:ap-south-1:270009541057:autoScalingGroup:93d114db-088b-4814-8e3c-3ca4e0c1fb9c:autoScalingGroupName/asg_ecs"
         managed_termination_protection = "DISABLED"
 
         # for autoscaling
@@ -98,7 +98,7 @@ ecs_config = {
   }
 
   cluster2 = {
-    create       = true # set create = false if asg not created/cluster not required
+    create       = false # set create = false if asg not created/cluster not required
     cluster_name = "test_ecs_2"
     cluster_settings = {
       name  = "containerInsights"
@@ -135,7 +135,7 @@ ecs_config = {
 # ecs task definition
 ecs_task_definition_config = {
   td1 = {
-    create = true
+    create = false
     family = "test"
     container_definitions = [
       {

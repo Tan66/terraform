@@ -1,5 +1,5 @@
 # ec2
-variable "apache_ec2_server_count" {
+variable "apache_ec2_server_create" {
   type = bool
 }
 

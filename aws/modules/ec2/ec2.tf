@@ -20,7 +20,7 @@ resource "aws_instance" "web" {
   key_name               = "ec2mumbai"
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.vpc_security_group_ids
-  user_data              = var.user_data
+  # user_data              = var.user_data
   tags = {
     Name = "webserver"
   }
